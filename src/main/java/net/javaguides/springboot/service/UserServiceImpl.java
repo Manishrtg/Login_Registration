@@ -21,11 +21,11 @@ public class UserServiceImpl implements UserService {
 
 	private UserRepository userRepository;
 	
-	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
+//	@Autowired
+//	private BCryptPasswordEncoder passwordEncoder;
 
 	public UserServiceImpl(UserRepository userRepository) {
-		super();
+		// super();
 		this.userRepository = userRepository;
 	}
 
@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
 		User user=new User(registrationDto.getFirstName(),
 							registrationDto.getLastName(), 
 							registrationDto.getEmail(),
-							passwordEncoder.encode(registrationDto.getPassword()), 
+							registrationDto.getPassword(),
 							Arrays.asList(new Role("ROLE_USER")));
 		
 		return userRepository.save(user);
@@ -56,8 +56,26 @@ public class UserServiceImpl implements UserService {
 	}
 
 	private Collection<? extends GrantedAuthority> mapRolesToAuthorities(Collection<Role> roles){
-		
+
 		return roles.stream().map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList());
-	
+
 	}
+
+	// New method to handle login logic
+	public String login(String email, String password) {
+		// Fetch the user from the database using the email
+		User user = userRepository.findByEmail(email);
+
+		if (user != null) {
+			// Check if the password matches the stored hashed password
+			if (user.getPassword().equals(password)) {
+				return "Congrats " + user.getFirstName() + ", you successfully logged in!";
+			} else {
+				return "Incorrect password.";
+			}
+		} else {
+			return "Email not found.";
+		}
+	}
+
 }
